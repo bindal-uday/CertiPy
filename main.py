@@ -38,7 +38,7 @@ excel_path = "./list.xlsx"  # Update with your Excel file path
 df = pd.read_excel(excel_path)
 
 # Function to create a certificate
-def create_certificate(name, cert_number):
+def create_certificate(name, cert_number, course, year):
 
     # Create a copy of the template
     certificate = template.copy()
@@ -89,8 +89,12 @@ def create_certificate(name, cert_number):
     )
 
     # Save the certificate
-    certificate.save(f'certificates/{name.replace(" ", "_")}_certificate.png')
-
+    course_dir = os.path.join("certificates", course)
+    year_dir = os.path.join(course_dir, str(year))
+    os.makedirs(year_dir, exist_ok=True)
+    certificate.save(
+        os.path.join(year_dir, f'{name.replace(" ", "_")}_certificate.png')
+    )
 
 # Create a directory for certificates if it doesn't exist
 if not os.path.exists("certificates"):
@@ -99,7 +103,10 @@ if not os.path.exists("certificates"):
 # Generate certificates for each student
 for index, row in df.iterrows():
     student_name = row["Name"]
-    cert_number = row["Certificate Number"]
-    create_certificate(student_name, cert_number)
+    raw_cert_number = row["Certificate Number"]
+    cert_number = str(raw_cert_number).zfill(3)
+    course = row["Course"]
+    year = row["Year"]
+    create_certificate(student_name, cert_number, course, year)
 
 print("Certificates generated successfully!")
